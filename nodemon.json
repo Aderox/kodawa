@@ -1,0 +1,3 @@
+{
+	"ignore": ["./slashcmds/", "*.json"]
+}
