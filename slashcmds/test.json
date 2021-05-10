@@ -1,6 +1,26 @@
 {
     "data": {
         "name": "test",
-        "description": "Une commande de test!"
+        "description": "Une commande de test!",
+        "options":[
+          {
+            "name":"message",
+            "description": "Le message",
+            "type": 3,
+            "required": true
+          },
+          {
+            "name":"delay",
+            "description": "Le delay en ms",
+            "type": 4,
+            "required": true
+          },
+          {
+            "name":"user",
+            "description":"L'utilisateur",
+            "type": 6,
+            "required":true
+          }
+        ]
       }
 }

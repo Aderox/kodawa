@@ -75,7 +75,6 @@ async function readSlashCommands(){
 
 bot.on("ready", async () =>  {
     console.log("Bot ready !")
-
     //SUPPRIME TOUTE LES COMMANDES DE LA GUILD (relative au bot of)
     //await deleteAllGuildCommands();
     await readSlashCommands();
