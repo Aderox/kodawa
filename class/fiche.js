@@ -1,5 +1,6 @@
 const Discord = require("discord.js");
 const fs = require("fs");
+const fetch = require("node-fetch");
 const { cpuUsage } = require("process");
 
 function isValidURL(string) {
@@ -226,6 +227,12 @@ module.exports =  {
                     this.class = data.class;
                     this.faction = data.faction;
                     this.capacite_special = data.capacite_special;
+                    this.imagesIRL = data.imagesIRL;
+                    this.ig_images = data.ig_images;
+                    this.histoire = data.histoire;
+                    this.caractere = data.caractere;
+                    this.caractereIG = data.caractereIG;
+                    this.armes = data.armes;
                     this.pouvoir1 = data.pouvoirs[0]
                     this.pouvoir2 = data.pouvoirs[1]
                     resolve('OK')
@@ -356,6 +363,161 @@ module.exports =  {
             })
         }
 
+        async getLVL(author,guildID){
+                return new Promise(async (resolve, reject) => {
+                    const MEE6API = "https://mee6.xyz/api/plugins/levels/leaderboard/"
+                    let lvl = -1
+                    let userID = author.id;
+                    try{
+                        let jsonReponse = await fetch(MEE6API+guildID , {method: "GET"})
+                        jsonReponse = await jsonReponse.json();
+                        let players = await jsonReponse.players
+                        players.forEach(player => {
+                            if(player.id == userID){
+                                lvl = player.level
+                            }
+                        });
+                        this.lvl = lvl;
+                        resolve(lvl);
+                }catch(e){
+                    reject(e)
+                }
+                })
+        }
+
+        async afficherFiche(bot,author,guildID,channel){
+            return new Promise (async (resolve,reject) => {
+                await this.readJSON(bot, author);
+                await this.getLVL(author,guildID);
+
+                console.log("LVL: " + this.lvl)
+
+                if(this.pouvoir1.nom === undefined || this.pouvoir2.nom === undefined){
+                    author.send("Vous n'avez pas de pouvoir ! faite \"/ajouterpouvoir\" pour ajouter vos pouvoirs avant de faire cette commande !")
+                    resolve('NO_POWER')
+                    return;
+                }
+                else if(this.capacite_special.nom === undefined){
+                    author.send("Vous n'avez pas de pouvoir ! faite \"/ajouterspecial\" pour ajouter votre capactié spécial avant de faire cette commande !")
+                    resolve('NO_SPECIAL')
+                    return;
+                }
+
+                /*
+                    this.name = data.nom;
+                    this.firstname = data.prenom;
+                    this.age = data.age;
+                    this.taille = data.taille;
+                    this.poids = data.poids;
+                    this.autre = data.autre;
+                    this.pseudo = data.pseudo;
+                    this.ig_taille = data.ig_taille;
+                    this.ig_poids = data.ig_poids;
+                    this.ig_autre = data.ig_autre;
+                    this.race = data.race;
+                    this.class = data.class;
+                    this.faction = data.faction;
+                    this.capacite_special = data.capacite_special;
+                    this.imagesIRL = data.imagesIRL;
+                    this.ig_images = data.ig_images;
+                    this.histoire = data.histoire;
+                    this.caractere = data.caractere;
+                    this.caractereIG = data.caractereIG;
+                    this.armes = data.armes;
+                    this.pouvoir1 = data.pouvoirs[0]
+                    this.pouvoir2 = data.pouvoirs[1]
+                */
+
+                    let embedFiche = new Discord.MessageEmbed()
+                    .setColor(0x9867C5)
+                    .setAuthor(author.username + '     **Image IRL: **',author.displayAvatarURL())
+                    .setTitle(`Fiche RP de ${this.firstname} ${this.name}`)
+                    .setDescription(`Pseudo in-game: ${this.pseudo}. Niveau in-game: ${this.lvl}.`)
+                    .addFields(
+                        {name: `Informations physique IRL:`,value: `Âge: ${this.age} ans\nTaille: ${this.taille} cm\nPoids: ${this.poids} kg\nAutre Info: ${this.autre}.`},
+                        {name:'\u200B',value:`\u200B`,inline:false},
+                        {name: `Informations physique InGame:   `, value: `Taille: ${this.ig_taille} cm\nPoids: ${this.ig_poids} kg\nAutre Info: ${this.ig_autre}`, inline: true},
+                        {name: 'Info du joueur:', value: `Race: ${this.race}\nClasse: ${this.class}\nFaction: ${this.faction.charAt(0).toUpperCase() + this.faction.slice(1)}`, inline: true }
+            
+                    )
+            
+                    embedFiche.addField('\u200B',`\u200B`,false)
+                    embedFiche.addField("Armes: ", this.armes.substring(0,1024))
+
+                    embedFiche.addField('Premier pouvoir',`Nom du pouvoir: ${this.pouvoir1.nom}\nDescriptions: ${this.pouvoir1.descriptions}\nDégats: ${this.pouvoir1.degats}\nCooldown: ${this.pouvoir1.cooldown_tours} tours\nType: ${this.pouvoir1.type}\nPénalité de dégat: ${this.pouvoir1.penalite_degat_pourcent}%\nPénalité de précision: ${this.pouvoir1.penalite_precision_pourcent}%\nNombre de tours actif: ${this.pouvoir1.nombre_de_tour_actif} tours`,true)
+
+                    embedFiche.addField('Deuxième pouvoir',`Nom du pouvoir: ${this.pouvoir2.nom}\nDescriptions: ${this.pouvoir2.descriptions}\nDégats: ${this.pouvoir2.degats}\nCooldown: ${this.pouvoir2.cooldown_tours} tours\nType: ${this.pouvoir2.type}\nPénalité de dégat: ${this.pouvoir2.penalite_degat_pourcent}%\nPénalité de précision: ${this.pouvoir2.penalite_precision_pourcent}%\nNombre de tours actif: ${this.pouvoir2.nombre_de_tour_actif} tours`,true)
+
+                    embedFiche.addField('Capacité Special',`Nom de la capacité: ${this.capacite_special.nom}\nDescriptions: ${this.capacite_special.descriptions}\nDégats: ${this.capacite_special.degats}\nType: ${this.capacite_special.type}\nContre coup: ${this.capacite_special.effet_secondaire}\nPénalité de dégat: ${this.capacite_special.penalite_degat_pourcent}%\nPénalité de précision: ${this.capacite_special.penalite_precision_pourcent}%\nNombre de tours actif: ${this.capacite_special.nombre_de_tour_actif} tours`,true)
+
+                    embedFiche.addField('\u200B',`\u200B`,false)
+                    embedFiche.addField('Image IG:','\u200B',false)
+            
+                    embedFiche.setThumbnail(this.imagesIRL)
+                    embedFiche.setImage(this.ig_images)
+                    
+                    console.log("CARACTERE :")
+                    console.log(this.caractere)
+                    console.log("HAA")
+
+                    let ALLhistoire = this.histoire
+                    let histoire = []
+        
+                    let ALLcaraIRL = this.caractere
+                    let caraIRL = []
+
+        
+                    let ALLcaraIG = this.caractereIG
+                    let caraIG = []
+        
+                    for(let i=0;i< Math.trunc(ALLhistoire.length/2048)+1; i++){
+                        histoire.push(ALLhistoire.substring(i * 2048, (i+1) * 2048))
+                    }
+        
+                    for(let i=0;i < Math.trunc(ALLcaraIRL.length/2048)+1; i++){
+                        caraIRL.push(ALLcaraIRL.substring(i * 2048, (i+1) * 2048))
+                    }
+        
+                    for(let i=0;i< Math.trunc(ALLcaraIG.length/2048)+1; i++){
+                        caraIG.push(ALLcaraIG.substring(i * 2048, (i+1) * 2048))
+                    }
+        
+                    
+                    await channel.send(embedFiche)
+                        let tempEmbed;
+                        let n=0;
+                        n=0
+                        caraIRL.forEach(async e => {
+                            n+=1
+                            tempEmbed = new Discord.MessageEmbed()
+                            .setColor(0x9867C5)
+                            .setTitle(`**Caractère IRL, Partie ` + n + '**')
+                            .setDescription(e)
+                            await channel.send(tempEmbed)
+                        });
+            
+                        n=0
+                        caraIG.forEach(async e => {
+                            n+=1
+                            tempEmbed = new Discord.MessageEmbed()
+                            .setColor(0x9867C5)
+                            .setTitle(`Caractère IG, Partie ` + n)
+                            .setDescription(e)
+                            await channel.send(tempEmbed)
+                        });
+                        n=0
+                        histoire.forEach(async e => {
+                            n+=1
+                            tempEmbed = new Discord.MessageEmbed()
+                            .setColor(0x9867C5)
+                            .setTitle(`Histoire, Partie ` + n)
+                            .setDescription(e)
+                            await channel.send(tempEmbed)
+                        });
+
+            })
+        }
+
         
     },
 
@@ -426,5 +588,16 @@ module.exports =  {
             fiche.writeJSONspecial(bot, author, specialC, option)
         }
 
+    },
+
+    afficherFiche: async function (bot, interaction, option){
+        let authorID = interaction.member.user.id;
+        let author = await bot.users.fetch(authorID);
+        let guildID = interaction.guild_id;
+        let channelID = interaction.channel_id;
+        let channel = await bot.channels.fetch(channelID);
+
+        let fiche = new this.FicheC(bot,interaction,option,author);
+        await fiche.afficherFiche(bot, author, guildID,channel);
     }
 }
