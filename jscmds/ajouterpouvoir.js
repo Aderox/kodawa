@@ -4,15 +4,12 @@ const sendMessage = require("../modules/sendMessage.js")
 const Fiche = require("../class/fiche.js")
 
 module.exports.run = async(bot, interaction, options) => {
-
-    Fiche.main(bot,interaction,options);
-    
-    return sendMessage.main("Création de la fiche de " + options[0].value + " " + options[1].value);
+    Fiche.addPower(bot,interaction,options);
+    return sendMessage.main("Création de votre pouvoir");
 }
 
 
-
 module.exports.help =  {
-    name:"creerfiche",
+    name:"ajouterpouvoir",
     aliases:[]
 }

@@ -88,8 +88,6 @@ bot.on("ready", async () =>  {
         bot.api.interactions(interaction.id, interaction.token).callback.post(stuffReturn);
         }
       }); 
-
-
 })
 
 

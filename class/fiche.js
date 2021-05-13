@@ -1,5 +1,6 @@
 const Discord = require("discord.js");
 const fs = require("fs");
+const { cpuUsage } = require("process");
 
 function isValidURL(string) {
     var res = string.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
@@ -36,7 +37,7 @@ module.exports =  {
             let caraIG = otherData[1];
             let story = otherData[2];
             let armes = otherData[3];
-            let special = otherData[4];
+            //let special = otherData[4];
 
             let imageIRL = imagesPATH[0];
             let imageIG = imagesPATH[1];
@@ -54,16 +55,16 @@ module.exports =  {
                 "caractereIG":caraIG.join(','),
                 "histoire":story.join(','),
                 "pseudo":pseudo,
-                "tailleIG":tailleIG,
-                "poidsIG":poidsIG,
-                "autreIG":autreIG,
+                "ig_taille":tailleIG,
+                "ig_poids":poidsIG,
+                "ig_autre":autreIG,
                 "race":race,
                 "classe":classe,
                 "faction":faction,
                 "armes":armes.join(','),
-                "capacite_special":special.join(','),
                 "imagesIRL":imageIRL,
-                "imagesIG":imageIG,
+                "ig_images":imageIG,
+                "capacite_special":{},
                 "pouvoirs": [{},{}],
                 "inventaire": []
             
@@ -88,25 +89,8 @@ module.exports =  {
             *   3-Mettre les donées dans la classe
             */
             
+            //name,firstname,age,height,weight,other,username,ig_height,ig_weight,ig_other,ig_race,ig_class,ig_faction
             
-            /*
-            name,firstname,age,height,weight,other,username,ig_height,ig_weight,ig_other,ig_race,ig_class,ig_faction
-
-            this.name = name
-            this.firstname = firstname
-            this.age = age
-            this.height = height
-            this.weight = weight
-            this.other = other
-            this.username = username
-            this.ig_height = ig_height
-            this.ig_weight = ig_weight
-            this.ig_other = ig_other
-            this.ig_race = ig_race
-            this.ig_class = ig_class
-            this.ig_faction = ig_faction
-            */
-
 
             /**
              * 0 Error
@@ -114,7 +98,6 @@ module.exports =  {
              * 2 Already existing
              */
 
-            //1
             return new Promise(async (resolve,reject) => {
                 fs.readdir("./game/fiches", async (err,files) => {
                     if(err) {console.error(err);reject(0)}
@@ -165,16 +148,10 @@ module.exports =  {
         })
         }
 
-        async askConfimation(author){
+        async askConfimation(author,confirmationMessage){
             return new Promise(async (resolve,reject) => {
-            console.log("truc appelé !");
-            /**
-             * 0 Error
-             * 1 File already existing. Asking confirmation
-             * 2 Ok !
-             */
             let DMchan = await author.createDM()
-            await DMchan.send("Vous avez déjà une fiche. Si vous continuez elle sera supprimée !. Pour continuer écrivez \"oui\".")
+            await DMchan.send(confirmationMessage)
 
             const filter = (msg, user) => {
                 if(msg.author.bot) return false;
@@ -222,21 +199,163 @@ module.exports =  {
                     msgCollector.stop()
                     resolve(msgCollected.attachments.first().url)
                 }else{
-                    console.log("NADA  !")
+                    console.log("NADA !")
                     await DMchan.send("Ce n'est ni un lien ni une image !")
                 }
             });
         })
         }
 
-        async readJSON(author){
+        async readJSON(bot,author){
             return new Promise(async (resolve,reject) => {
                 fs.readFile('./game/fiches/'+author.id+'.json',async (err,dataBrut) => {
                     let data = JSON.parse(dataBrut.toString());
                     //A FINIR + POUVOIR
+                    if(data){
+                    this.name = data.nom;
+                    this.firstname = data.prenom;
+                    this.age = data.age;
+                    this.taille = data.taille;
+                    this.poids = data.poids;
+                    this.autre = data.autre;
+                    this.pseudo = data.pseudo;
+                    this.ig_taille = data.ig_taille;
+                    this.ig_poids = data.ig_poids;
+                    this.ig_autre = data.ig_autre;
+                    this.race = data.race;
+                    this.class = data.class;
+                    this.faction = data.faction;
+                    this.capacite_special = data.capacite_special;
+                    this.pouvoir1 = data.pouvoirs[0]
+                    this.pouvoir2 = data.pouvoirs[1]
+                    resolve('OK')
+                    }else{
+                        resolve('NOTHING')
+                    }
                 })
             })
         }
+
+        async verifyPower(bot,author){
+            return new Promise(async (resolve,reject) => {
+                await this.readJSON(bot,author)
+                /*
+                * ERROR Erreur
+                * OK Fine
+                * FIRST_TAKEN 1er occupé
+                * SECOND_TAKEN 2eme occupé
+                * BOTH 1 ET 2 occupé
+                 */
+                if(this.pouvoir1.nom === undefined && this.pouvoir2.nom === undefined){
+                    resolve(0)
+
+                }
+                else if(this.pouvoir1.nom === undefined){
+                    resolve(0)
+                }
+                else if(this.pouvoir2.nom === undefined ){
+                    //SECOND TAKEN ON RETURN 0
+                    resolve(1)
+                }
+                else{
+                    //RAS ON RETURN 0
+                    let confirmation = await this.askConfimation(author,"Vous avez déjà deux pouvoirs. Si vous continuez vos pouvoirs seront supprimés !. Pour continuer écrivez \"oui\".")
+                    if(confirmation === 'CONFIRMED'){
+                        resolve('BOTH')
+                    }
+                }
+            })
+        }
+
+        async writeJSONpower(bot,author,indicePouvoir,pouvoirData){
+            return new Promise(async (resolve,reject) => {
+                fs.readFile('./game/fiches/'+author.id+'.json',async (err,dataBrut) => {
+                    let data = JSON.parse(dataBrut.toString());
+
+                    if(indicePouvoir === 'BOTH'){
+                        data.pouvoirs[1] = {}
+                        indicePouvoir = 0
+                    }
+
+                    data.pouvoirs[indicePouvoir] = {
+                        "nom": pouvoirData[0].value,
+                        "degats": pouvoirData[1].value,
+                        "cooldown_tours": pouvoirData[2].value,
+                        "type": pouvoirData[3].value,
+                        "descriptions": pouvoirData[4].value,
+                        "penalite_degat_pourcent": pouvoirData[5].value,
+                        "penalite_precision_pourcent": pouvoirData[6].value,
+                        "nombre_de_tour_actif": pouvoirData[7].value,
+                    }
+
+                    fs.writeFile("./game/fiches/"+author.id+".json", JSON.stringify(data, null, 4), function(err) {
+                        if (err) {
+                        console.error(err);
+                        reject(err)
+                        }
+                        else {
+                        resolve("OK")
+                        }
+                    });
+                })
+
+            })
+        }
+
+        async verifySpecial(bot,author){
+            return new Promise(async (resolve,reject) => {
+                await this.readJSON(bot,author)
+                /*
+                * ERROR Erreur
+                * OK Fine
+                * FIRST_TAKEN 1er occupé
+                * SECOND_TAKEN 2eme occupé
+                * BOTH 1 ET 2 occupé
+                 */
+                if(this.capacite_special.nom === undefined){
+                    resolve('OK')
+                }
+                else{
+                    let confirmation = await this.askConfimation(author,"Vous avez déjà une capacité special. Si vous continuez votre capactié sera remplacé ! Pour continuer écrivez \"oui\".")
+                    if(confirmation === 'CONFIRMED'){
+                        resolve('OK')
+                    }else{
+                        resolve('NOPE')
+                    }
+                }
+            })
+        }
+
+        async writeJSONspecial(bot,author,specialC,specialData){
+            return new Promise(async (resolve,reject) => {
+                fs.readFile('./game/fiches/'+author.id+'.json',async (err,dataBrut) => {
+                    let data = JSON.parse(dataBrut.toString());
+
+                    data.capacite_special = {
+                        "nom": specialData[0].value,
+                        "degats": specialData[1].value,
+                        "type": specialData[2].value,
+                        "descriptions": specialData[3].value,
+                        "effet_secondaire": specialData[4].value,
+                        "penalite_degat_pourcent": specialData[5].value,
+                        "penalite_precision_pourcent": specialData[6].value,
+                        "nombre_de_tour_actif": specialData[7].value,
+                    }
+
+                    fs.writeFile("./game/fiches/"+author.id+".json", JSON.stringify(data, null, 4), function(err) {
+                        if (err) {
+                        console.error(err);
+                        reject(err)
+                        }
+                        else {
+                        resolve("OK")
+                        }
+                    });
+                })
+
+            })
+        }
+
         
     },
 
@@ -250,10 +369,11 @@ module.exports =  {
         let readed = await fiche.readDir(author);
         if(readed === 'FILE_ALREADY_EXISTING'){
             console.log("on demande la confirmation: ")
-            let confirmation = await fiche.askConfimation(author);
+            let confirmation = await fiche.askConfimation(author,"Vous avez déjà une fiche. Si vous continuez elle sera supprimée !. Pour continuer écrivez \"oui\".");
             console.log("confirmation: " + confirmation);
             if(confirmation === 'NOPE'){
-                console.log("ON ANNULE ! c'est la fin")
+                console.log("ON ANNULE ! c'est la fin. On va lire les donnée !")
+                //TODO FICHE GET DATA !
                 return;
             }
         }
@@ -262,18 +382,49 @@ module.exports =  {
         let caraIG = await fiche.askInfo(bot, author, "Caractère du personnage IG (envoyez \"fin\" pour terminer, vous pouvez envoyer plusieurs message):");
         let histoire = await fiche.askInfo(bot, author, "Histoire du personnage (envoyez \"fin\" pour terminer, vous pouvez envoyer plusieurs message):");
         let armes = await fiche.askInfo(bot, author, "Armes du personnage (envoyez \"fin\" pour terminer, vous pouvez envoyer plusieurs message):");
-        let special = await fiche.askInfo(bot, author, "Capacité spécial du personnage (envoyez \"fin\" pour terminer, vous pouvez envoyer plusieurs message):");
+        //let special = await fiche.askInfo(bot, author, "Capacité spécial du personnage (envoyez \"fin\" pour terminer, vous pouvez envoyer plusieurs message):");
         
         //TODO CREATE SPECIAL WITH "/" CMD
 
 
-        let imageIRL = await fiche.askImage(bot,author, "Lien ou image du personnage IRL")
-        let imageIG = await fiche.askImage(bot,author, "Lien ou image du personnage IG")
+        let imageIRL = await fiche.askImage(bot,author, "Un lien ou une image du personnage IRL")
+        let imageIG = await fiche.askImage(bot,author, "Un lien ou une image du personnage IG")
 
-        let otherData = [caraIRL,caraIG,histoire,armes,special]
+        let otherData = [caraIRL,caraIG,histoire,armes] //,special]
         let images = [imageIRL,imageIG]
 
         await fiche.writeJSON(bot,author,option,otherData,images)
+        await author.send("Vous pouvez mainteant ajouter vos pouvoirs avec \"/ajouterpouvoir\" ")
         
+    },
+
+    addPower: async function (bot, interaction, option){
+        let authorID = interaction.member.user.id;
+        let author = await bot.users.fetch(authorID);
+
+        let fiche = new this.FicheC(bot,interaction,option,author);
+
+        let power = await fiche.verifyPower(bot,author)
+        if(power === 'NOPE'){
+            return
+        }else{
+            fiche.writeJSONpower(bot, author, power, option)
+        }
+
+    },
+
+    addSpecial: async function (bot, interaction, option){
+        let authorID = interaction.member.user.id;
+        let author = await bot.users.fetch(authorID);
+
+        let fiche = new this.FicheC(bot,interaction,option,author);
+
+        let specialC = await fiche.verifySpecial(bot,author)
+        if(specialC === 'NOPE'){
+            return
+        }else{
+            fiche.writeJSONspecial(bot, author, specialC, option)
+        }
+
     }
 }

@@ -1,0 +1,108 @@
+{
+  "data": {
+      "name": "ajouterspecial",
+      "description": "Une commande qui vous permet d'ajouter votre capacité spécial",
+      "options": [
+              {
+                "name": "nom",
+                "description": "Le nom de votre capacité spécial",
+                "type": 3,
+                "required": true
+              },
+              {
+                "name": "degats",
+                "description": "Les degats de votre capacité spécial",
+                "type": 4,
+                "required": true
+
+              },
+              {
+                "name": "type",
+                "description": "Le type de ",
+                "type": 3,
+                "required": true,
+                "choices": [
+                  {
+                    "name": "feu",
+                    "value": "FEU"
+                  },
+                  {
+                    "name": "eau",
+                    "value": "EAU"
+                  },
+                  {
+                  "name": "air",
+                  "value": "AIR"
+                  },
+                  {
+                  "name": "terre",
+                  "value": "TERRE"
+                  },
+                  {
+                    "name": "tempete",
+                    "value": "TEMPETE"
+                  },
+                  {
+                    "name": "foudre",
+                    "value": "FOUDRE"
+                  },
+                  {
+                    "name": "sang",
+                    "value": "SANG"
+                  },
+                  {
+                    "name": "tenebre",
+                    "value": "TENEBRE"
+                  },
+                  {
+                    "name": "lumiere",
+                    "value": "LUMIERE"
+                  },
+                  {
+                    "name": "arcane",
+                    "value": "ARCANE"
+                  },
+                  {
+                    "name": "ombre",
+                    "value": "OMBRE"
+                  },
+                  {
+                    "name": "stellaire",
+                    "value": "STELLAIRE"
+                  }
+                ]
+              },
+              {
+                "name": "description",
+                "description": "Une description de votre capacité spécial",
+                "type": 3,
+                "required": true
+              },
+              {
+                "name": "effet_secondaire",
+                "description": "Les effets secondaires de votre capacité spécial",
+                "type": 3,
+                "required": true
+              },
+              {
+                "name": "penalite_degat_pourcent",
+                "description": "La penalité de dégats qu'inflige votre attaque à l'adversaire en pourcent.",
+                "type": 4,
+                "required": true
+              },
+              {
+                "name": "penalite_precision_pourcent",
+                "description": "La penalité en precision qu'inflige votre attaque à l'adversaire en pourcent.",
+                "type": 4,
+                "required": true
+              },
+              {
+                "name": "nombre_de_tour_actif",
+                "description": "Le nombre de tours durant lequel les pénalités de votre attaques seront actives",
+                "type": 4,
+                "required": true
+              }
+
+            ]
+        }
+}
