@@ -11,7 +11,7 @@ const test = require('./class/test.class.js');
 
 testo  = new test.Test("aaa");
 
-
+const RPguildId = "836871444738211840";
 const devGuildID = "743192359038091326";
 
 

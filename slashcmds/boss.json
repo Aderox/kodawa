@@ -1,0 +1,239 @@
+{
+    "data": {
+        "name": "boss",
+        "description": "Une commande de test!",
+        "options":[
+          {
+            "name": "creer",
+            "description": "Une commande qui vous permet de créer un nouveau boss",
+            "type":1,
+            "options": [
+              {
+                  "name": "id",
+                  "description": "L'id du boss (pas d'espace ni de majuscule)",
+                  "type": 3,
+                  "required": true
+              },
+              {
+                "name": "nom",
+                "description": "Le nom du boss",
+                "type": 3,
+                "required": true
+              },
+              {
+                "name": "taille",
+                "description": "La taille du boss en mètre",
+                "type": 4,
+                "required": true
+              },
+              {
+                "name": "pv",
+                "description": "Les points de vie du boss",
+                "type": 4,
+                "required": true
+              },
+              {
+                "name": "type",
+                "description": "Le type du boss",
+                "type": 3,
+                "required": true,
+                "choices": [
+                  {
+                    "name": "feu",
+                    "value": "FEU"
+                  },
+                  {
+                    "name": "eau",
+                    "value": "EAU"
+                  },
+                  {
+                  "name": "air",
+                  "value": "AIR"
+                  },
+                  {
+                  "name": "terre",
+                  "value": "TERRE"
+                  },
+                  {
+                    "name": "tempete",
+                    "value": "TEMPETE"
+                  },
+                  {
+                    "name": "foudre",
+                    "value": "FOUDRE"
+                  },
+                  {
+                    "name": "sang",
+                    "value": "SANG"
+                  },
+                  {
+                    "name": "tenebre",
+                    "value": "TENEBRE"
+                  },
+                  {
+                    "name": "lumiere",
+                    "value": "LUMIERE"
+                  },
+                  {
+                    "name": "arcane",
+                    "value": "ARCANE"
+                  },
+                  {
+                    "name": "ombre",
+                    "value": "OMBRE"
+                  },
+                  {
+                    "name": "stellaire",
+                    "value": "STELLAIRE"
+                  }
+                ]
+                },
+                {
+                    "name": "salon",
+                    "description": "Le salon du boss",
+                    "type": 7,
+                    "required": true
+                },
+                {
+                "name": "description",
+                "description": "La description du boss",
+                "type": 3,
+                "required": true
+                },
+                {
+                    "name": "niveau_requis",
+                    "description": "Le niveau requis pour attaquer le boss",
+                    "type": 4,
+                    "required": true
+                }
+                ]
+            },
+          {
+          "name": "ajouterattaque",
+          "description": "Une commande qui vous permet d'ajouter une attaque à un boss",
+          "type":1,
+          "options": [
+              {
+                "name": "id",
+                "description": "L'id du boss à modifier",
+                "type": 3,
+                "required": true
+              },
+              {
+                "name": "nom",
+                "description": "Le nom de l'attaque",
+                "type": 3,
+                "required": true
+              },
+              {
+                "name": "degats",
+                "description": "Les degats de l'attaque",
+                "type": 4,
+                "required": true
+
+              },
+              {
+                "name": "cooldown_tours",
+                "description": "Le nombre de tours de cooldown",
+                "type": 4,
+                "required": true
+              },
+              {
+                "name": "type",
+                "description": "Le type de l'attaque",
+                "type": 3,
+                "required": true,
+                "choices": [
+                  {
+                    "name": "feu",
+                    "value": "FEU"
+                  },
+                  {
+                    "name": "eau",
+                    "value": "EAU"
+                  },
+                  {
+                  "name": "air",
+                  "value": "AIR"
+                  },
+                  {
+                  "name": "terre",
+                  "value": "TERRE"
+                  },
+                  {
+                    "name": "tempete",
+                    "value": "TEMPETE"
+                  },
+                  {
+                    "name": "foudre",
+                    "value": "FOUDRE"
+                  },
+                  {
+                    "name": "sang",
+                    "value": "SANG"
+                  },
+                  {
+                    "name": "tenebre",
+                    "value": "TENEBRE"
+                  },
+                  {
+                    "name": "lumiere",
+                    "value": "LUMIERE"
+                  },
+                  {
+                    "name": "arcane",
+                    "value": "ARCANE"
+                  },
+                  {
+                    "name": "ombre",
+                    "value": "OMBRE"
+                  },
+                  {
+                    "name": "stellaire",
+                    "value": "STELLAIRE"
+                  }
+                ]
+              },
+              {
+                "name": "description",
+                "description": "Une description de l'attaque",
+                "type": 3,
+                "required": true
+              },
+              {
+                "name": "penalite_degat_pourcent",
+                "description": "La penalité de dégats qu'inflige l'attaque en pourcent.",
+                "type": 4,
+                "required": true
+              },
+              {
+                "name": "penalite_precision_pourcent",
+                "description": "La penalité en precision qu'inflige l'attaque en pourcent.",
+                "type": 4,
+                "required": true
+              },
+              {
+                "name": "nombre_de_tour_actif",
+                "description": "Le nombre de tours durant lequel les pénalités seront actives",
+                "type": 4,
+                "required": true
+              }
+
+            ]
+          },
+          {
+            "name": "afficher",
+            "description": "Une commande qui permet de lister tout les boss",
+            "type":1,
+            "options":[
+              {
+                "name":"detaille",
+                "description": "Si True, toute les informations seront afficher. Sinon uniquement l'id des boss sera afficher.",
+                "type": 5,
+                "required": true
+              }
+            ]
+          }
+        ]
+      }
+}

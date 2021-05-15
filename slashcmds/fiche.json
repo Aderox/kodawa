@@ -1,0 +1,323 @@
+{
+    "data": {
+        "name": "fiche",
+        "description": "Une commande qui vous permet de gérer votre fiche!",
+        "options":[
+          {
+            "name": "creer",
+            "description": "Une commande qui vous permet de créer un nouveau boss",
+            "type":1,
+            "options": [
+                {
+                    "name": "nom",
+                    "description": "Le nom de votre personnage. (irl)",
+                    "type": 3,
+                    "required": true
+                },
+                {
+                  "name": "prenom",
+                  "description": "Le Prénom de votre personnage. (irl)",
+                  "type": 3,
+                  "required": true
+              },
+              {
+                "name": "age",
+                "description": "L'âge de votre personnage. (irl, en année)",
+                "type": 4,
+                "required": true
+            },
+            {
+              "name": "taille",
+              "description": "La taille de votre personnage. (irl, en cm)",
+              "type": 4,
+              "required": true
+            },
+            {
+              "name": "poids",
+              "description": "Le poids de votre personnage. (irl, en kg)",
+              "type": 4,
+              "required": true
+            },
+            {
+              "name": "autre",
+              "description": "Autre infos sur votre personnage, au niveau physique.",
+              "type": 3,
+              "required": true
+            },
+            {
+              "name": "pseudo",
+              "description": "Le pseudo de votre personnage dans le jeu.",
+              "type": 3,
+              "required": true
+            },
+            {
+              "name": "taille_ig",
+              "description": "La taille de votre personnage dans le jeu. (en cm)",
+              "type": 4,
+              "required": true
+            },
+            {
+              "name": "poids_ig",
+              "description": "Le poids de votre personnage dans le jeu. (en kg)",
+              "type": 4,
+              "required": true
+            },
+            {
+              "name": "autre_ig",
+              "description": "Autre infos de votre personnage IG (au niveau physique).",
+              "type": 3,
+              "required": true
+            },
+            {
+              "name": "race",
+              "description": "La race de votre personnage (dans le jeu).",
+              "type": 3,
+              "required": true
+            },
+            {
+              "name": "classe",
+              "description": "La classe de votre personnage (dans le jeu).",
+              "type": 3,
+              "required": true
+            },
+            {
+                "name": "faction",
+                "description": "La faction de votre personnage (dans le jeu).",
+                "type": 3,
+                "required": true,
+                "choices": [
+                  {
+                    "name": "yami",
+                    "value": "Yami"
+                  },
+                  {
+                    "name": "hikari",
+                    "value": "Hikari"
+                }
+                ]
+              }
+            ]
+            },
+
+          {
+          "name": "ajouterpouvoir",
+          "description": "Une commande qui vous permet d'ajouter un pouvoir à votre fiche",
+          "type":1,
+          "options": [
+            {
+                "name": "nom",
+                "description": "Le nom de votre pouvoirs",
+                "type": 3,
+                "required": true
+              },
+              {
+                "name": "degats",
+                "description": "Les degats de votre attaque",
+                "type": 4,
+                "required": true
+
+              },
+              {
+                "name": "cooldown_tours",
+                "description": "Le nombre de tours de cooldown",
+                "type": 4,
+                "required": true
+              },
+              {
+                "name": "type",
+                "description": "Le type de l'attaque",
+                "type": 3,
+                "required": true,
+                "choices": [
+                  {
+                    "name": "feu",
+                    "value": "FEU"
+                  },
+                  {
+                    "name": "eau",
+                    "value": "EAU"
+                  },
+                  {
+                  "name": "air",
+                  "value": "AIR"
+                  },
+                  {
+                  "name": "terre",
+                  "value": "TERRE"
+                  },
+                  {
+                    "name": "tempete",
+                    "value": "TEMPETE"
+                  },
+                  {
+                    "name": "foudre",
+                    "value": "FOUDRE"
+                  },
+                  {
+                    "name": "sang",
+                    "value": "SANG"
+                  },
+                  {
+                    "name": "tenebre",
+                    "value": "TENEBRE"
+                  },
+                  {
+                    "name": "lumiere",
+                    "value": "LUMIERE"
+                  },
+                  {
+                    "name": "arcane",
+                    "value": "ARCANE"
+                  },
+                  {
+                    "name": "ombre",
+                    "value": "OMBRE"
+                  },
+                  {
+                    "name": "stellaire",
+                    "value": "STELLAIRE"
+                  }
+                ]
+              },
+              {
+                "name": "description",
+                "description": "Une description de votre attaque",
+                "type": 3,
+                "required": true
+              },
+              {
+                "name": "penalite_degat_pourcent",
+                "description": "La penalité de dégats qu'inflige votre attaque à l'adversaire en pourcent.",
+                "type": 4,
+                "required": true
+              },
+              {
+                "name": "penalite_precision_pourcent",
+                "description": "La penalité en precision qu'inflige votre attaque à l'adversaire en pourcent.",
+                "type": 4,
+                "required": true
+              },
+              {
+                "name": "nombre_de_tour_actif",
+                "description": "Le nombre de tours durant lequel les pénalités que votre attaque infligent seront actives",
+                "type": 4,
+                "required": true
+              }
+            ]
+          },
+          {
+            "name": "afficher",
+            "description": "Une commande qui vous permet d'afficher votre fiche RP !",
+            "type":1
+        },
+
+        
+        {
+            "name": "ajouterspecial",
+            "description": "Une commande qui vous permet d'ajouter votre capacité spécial",
+            "type":1,
+            "options": [
+              {
+                "name": "nom",
+                "description": "Le nom de votre capacité spécial",
+                "type": 3,
+                "required": true
+              },
+              {
+                "name": "degats",
+                "description": "Les degats de votre capacité spécial",
+                "type": 4,
+                "required": true
+
+              },
+              {
+                "name": "type",
+                "description": "Le type de l'attaque spécial",
+                "type": 3,
+                "required": true,
+                "choices": [
+                  {
+                    "name": "feu",
+                    "value": "FEU"
+                  },
+                  {
+                    "name": "eau",
+                    "value": "EAU"
+                  },
+                  {
+                  "name": "air",
+                  "value": "AIR"
+                  },
+                  {
+                  "name": "terre",
+                  "value": "TERRE"
+                  },
+                  {
+                    "name": "tempete",
+                    "value": "TEMPETE"
+                  },
+                  {
+                    "name": "foudre",
+                    "value": "FOUDRE"
+                  },
+                  {
+                    "name": "sang",
+                    "value": "SANG"
+                  },
+                  {
+                    "name": "tenebre",
+                    "value": "TENEBRE"
+                  },
+                  {
+                    "name": "lumiere",
+                    "value": "LUMIERE"
+                  },
+                  {
+                    "name": "arcane",
+                    "value": "ARCANE"
+                  },
+                  {
+                    "name": "ombre",
+                    "value": "OMBRE"
+                  },
+                  {
+                    "name": "stellaire",
+                    "value": "STELLAIRE"
+                  }
+                ]
+              },
+              {
+                "name": "description",
+                "description": "Une description de votre capacité spécial",
+                "type": 3,
+                "required": true
+              },
+              {
+                "name": "effet_secondaire",
+                "description": "Les effets secondaires de votre capacité spécial",
+                "type": 3,
+                "required": true
+              },
+              {
+                "name": "penalite_degat_pourcent",
+                "description": "La penalité de dégats qu'inflige votre attaque à l'adversaire en pourcent.",
+                "type": 4,
+                "required": true
+              },
+              {
+                "name": "penalite_precision_pourcent",
+                "description": "La penalité en precision qu'inflige votre attaque à l'adversaire en pourcent.",
+                "type": 4,
+                "required": true
+              },
+              {
+                "name": "nombre_de_tour_actif",
+                "description": "Le nombre de tours durant lequel les pénalités de votre attaques seront actives",
+                "type": 4,
+                "required": true
+              }
+            ]
+        }
+        ]
+      }
+}

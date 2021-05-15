@@ -16,9 +16,9 @@
             "required": true
           },
           {
-            "name":"user",
-            "description":"L'utilisateur",
-            "type": 6,
+            "name":"channel",
+            "description":"Le chan",
+            "type": 7,
             "required":true
           }
         ]

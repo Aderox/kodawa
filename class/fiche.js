@@ -19,7 +19,6 @@ module.exports =  {
 
         async writeJSON(bot,author,options,otherData,imagesPATH){
             return new Promise (async (resolve,reject) => {
-
             let nom = options[0].value;
             let prenom = options[1].value;
             let age = options[2].value;
@@ -392,41 +391,21 @@ module.exports =  {
 
                 console.log("LVL: " + this.lvl)
 
-                if(this.pouvoir1.nom === undefined || this.pouvoir2.nom === undefined){
+                if(this.pouvoir1.nom === undefined ){
                     author.send("Vous n'avez pas de pouvoir ! faite \"/ajouterpouvoir\" pour ajouter vos pouvoirs avant de faire cette commande !")
                     resolve('NO_POWER')
                     return;
                 }
+                else if(this.pouvoir2.nom === undefined){
+                    author.send("Vous n'avez qu'un pouvoir ! faite \"/ajouterpouvoir\" pour ajouter vos pouvoirs avant de faire cette commande !")
+                    resolve('NO_POWER')
+                    return;
+                }
                 else if(this.capacite_special.nom === undefined){
-                    author.send("Vous n'avez pas de pouvoir ! faite \"/ajouterspecial\" pour ajouter votre capactié spécial avant de faire cette commande !")
+                    author.send("Vous n'avez pas de capacité spécial ! faite \"/ajouterspecial\" pour ajouter votre capactié spécial avant de faire cette commande !")
                     resolve('NO_SPECIAL')
                     return;
                 }
-
-                /*
-                    this.name = data.nom;
-                    this.firstname = data.prenom;
-                    this.age = data.age;
-                    this.taille = data.taille;
-                    this.poids = data.poids;
-                    this.autre = data.autre;
-                    this.pseudo = data.pseudo;
-                    this.ig_taille = data.ig_taille;
-                    this.ig_poids = data.ig_poids;
-                    this.ig_autre = data.ig_autre;
-                    this.race = data.race;
-                    this.class = data.class;
-                    this.faction = data.faction;
-                    this.capacite_special = data.capacite_special;
-                    this.imagesIRL = data.imagesIRL;
-                    this.ig_images = data.ig_images;
-                    this.histoire = data.histoire;
-                    this.caractere = data.caractere;
-                    this.caractereIG = data.caractereIG;
-                    this.armes = data.armes;
-                    this.pouvoir1 = data.pouvoirs[0]
-                    this.pouvoir2 = data.pouvoirs[1]
-                */
 
                     let embedFiche = new Discord.MessageEmbed()
                     .setColor(0x9867C5)
