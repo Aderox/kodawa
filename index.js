@@ -1,13 +1,20 @@
 const Discord = require("discord.js");
 const fs = require("fs");
+const fetch = require('node-fetch');
 const botInfo = require('./botInfo.json')
 const bot = new Discord.Client();
+
+const DiscordAPI = "https://discord.com/api/v9/";
+
+const sendMessage = require("./modules/sendMessage")
+
+
 
 //ALL BOT COLLECTIONS
 bot.commands = new Discord.Collection()
 
 //ALL CLASS REQUIRED
-const test = require('./class/test.class.js');
+const test = require('./class/test.js');
 
 testo  = new test.Test("aaa");
 
@@ -72,7 +79,13 @@ async function readSlashCommands(){
         });
       });
 }
-
+async function sleep(ms){
+  return new Promise( (resolve,reject) => {
+    setTimeout(() => {
+      resolve()
+    }, ms)
+  })
+}
 bot.on("ready", async () =>  {
     console.log("Bot ready !")
     //SUPPRIME TOUTE LES COMMANDES DE LA GUILD (relative au bot of)
@@ -86,8 +99,19 @@ bot.on("ready", async () =>  {
         if(cmd){
         let stuffReturn = await cmd.run(bot, interaction, options);
         bot.api.interactions(interaction.id, interaction.token).callback.post(stuffReturn);
-        }
+        await sleep(500);
+        /*        //bot.api.interactions(interaction.id, interaction.token).callback.patch(sendMessage.main('TROP RELOU !'));
+        new Discord.WebhookClient(bot.user.id, interaction.token).send('hello world')
+                  await new Discord.WebhookClient(bot.user.id, interaction.token).edit(sendMessage.main('yay !'))
+        */
+      }
       }); 
+
+      bot.on('message', async msg => {
+        return;
+        //console.log("message: " + msg.content);
+        //TODO VERIFIER SI C'EST UN CHANNEL RP (TYPE) + FAIRE SPAWN MOB EN CONSEQUENCE (PROBA)
+      })
 })
 
 

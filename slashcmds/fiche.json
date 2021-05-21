@@ -95,6 +95,12 @@
                     "value": "Hikari"
                 }
                 ]
+              },
+              {
+                "name": "degats_attaque_basique",
+                "description": "Les dégats de l'attaque basique de votre personnage (dans le jeu).",
+                "type": 4,
+                "required": true
               }
             ]
             },
@@ -204,14 +210,7 @@
                 "required": true
               }
             ]
-          },
-          {
-            "name": "afficher",
-            "description": "Une commande qui vous permet d'afficher votre fiche RP !",
-            "type":1
-        },
-
-        
+          },     
         {
             "name": "ajouterspecial",
             "description": "Une commande qui vous permet d'ajouter votre capacité spécial",
@@ -317,7 +316,12 @@
                 "required": true
               }
             ]
-        }
+        },
+        {
+          "name": "afficher",
+          "description": "Une commande qui vous permet d'afficher votre fiche RP !",
+          "type":1
+      }
         ]
       }
 }

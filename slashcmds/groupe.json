@@ -1,0 +1,54 @@
+{
+    "data": {
+        "name": "groupe",
+        "description": "Une commande de test!",
+        "options":[
+          {
+            "name":"creer",
+            "description": "Creer un groupe",
+            "type": 1,
+            "options":[
+              {
+                "name": "nom",
+                "description": "Le nom du groupe",
+                "type": 3,
+                "required": true
+              }
+            ]
+          },
+          {
+            "name":"ajouter",
+            "description": "Ajouter quelqu'un dans votre groupe",
+            "type":1,
+            "options": [
+                {
+                    "name": "utilisateur",
+                    "description": "L'utilisateur à aujouter au groupe",
+                    "type": 3,
+                    "required": true
+                }
+            ]
+          },
+          {
+            "name":"retirer",
+            "description": "Retire quelqu'un de votre groupe",
+            "type": 1
+          },
+          {
+            "name":"list",
+            "description":"Liste les membres du groupe",
+            "type": 1
+          },
+          {
+            "name":"quitter",
+            "description": "Quitter le groupe",
+            "type": 1
+          },
+          {
+            "name":"supprimer",
+            "description": "Supprimer le groupe",
+            "type": 1
+          }
+        ]
+      }
+}

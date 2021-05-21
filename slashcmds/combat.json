@@ -1,0 +1,52 @@
+{
+    "data": {
+        "name": "combatre",
+        "description": "Vous permet d'engager un combat contre un joueur ou un monstre !",
+        "options":[
+          {
+            "name":"main",
+            "description": "TEMP !",
+            "type":1
+          },
+          {
+            "name":"mob",
+            "description": "Chercher et combattre un mob simple",
+            "type":1,
+            "options": [
+                {
+                    "name": "option1",
+                    "description": "option1 !",
+                    "type": 3,
+                    "required": false
+                }
+            ]
+          },
+          {
+            "name":"boss",
+            "description": "Combattre le boss de la zone",
+            "type": 1,
+            "options": [
+                {
+                    "name": "option1",
+                    "description": "option1 !",
+                    "type": 3,
+                    "required": false
+                }
+            ]
+          },
+          {
+            "name":"joueur",
+            "description":"Combattre un autre joueur",
+            "type": 1,
+            "options": [
+                {
+                    "name": "joueur",
+                    "description": "Le joueur à combatre !",
+                    "type": 6,
+                    "required": true
+                }
+            ]
+          }
+        ]
+      }
+}

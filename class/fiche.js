@@ -32,6 +32,7 @@ module.exports =  {
             let race = options[10].value;
             let classe = options[11].value;
             let faction = options[12].value;
+            let attaque_basique = options[13].value;
 
             let caraIRL = otherData[0];
             let caraIG = otherData[1];
@@ -64,6 +65,7 @@ module.exports =  {
                 "armes":armes.join(','),
                 "imagesIRL":imageIRL,
                 "ig_images":imageIG,
+                "attaque_basique":attaque_basique,
                 "capacite_special":{},
                 "pouvoirs": [{},{}],
                 "inventaire": []
@@ -86,17 +88,12 @@ module.exports =  {
             /*
             *   1-Verifier si le fichier existe, sinon return None
             *   2-Lire le fichier et convertir les données en JSON
-            *   3-Mettre les donées dans la classe
+            *   3-Mettre les donées dans la classe            
+            
+            * 0 Error
+            * 1 Ok !
+            * 2 Already existing
             */
-            
-            //name,firstname,age,height,weight,other,username,ig_height,ig_weight,ig_other,ig_race,ig_class,ig_faction
-            
-
-            /**
-             * 0 Error
-             * 1 Ok !
-             * 2 Already existing
-             */
 
             return new Promise(async (resolve,reject) => {
                 fs.readdir("./game/fiches", async (err,files) => {
@@ -109,7 +106,8 @@ module.exports =  {
                         files.forEach( async file => {
                             if(file.includes(author.id)){
                                 console.log("fichier trouver !")
-                                resolve('FILE_ALREADY_EXISTING')
+                                console.log("existe déjà !")
+                                resolve('FICHE_ALREADY_EXISTING');
                                 }
                         });
                     }
@@ -231,6 +229,7 @@ module.exports =  {
                     this.histoire = data.histoire;
                     this.caractere = data.caractere;
                     this.caractereIG = data.caractereIG;
+                    this.attaque_basique = data.attaque_basique;
                     this.armes = data.armes;
                     this.pouvoir1 = data.pouvoirs[0]
                     this.pouvoir2 = data.pouvoirs[1]
@@ -392,24 +391,24 @@ module.exports =  {
                 console.log("LVL: " + this.lvl)
 
                 if(this.pouvoir1.nom === undefined ){
-                    author.send("Vous n'avez pas de pouvoir ! faite \"/ajouterpouvoir\" pour ajouter vos pouvoirs avant de faire cette commande !")
+                    author.send("Vous n'avez pas de pouvoir ! faite \"/fiche ajouterpouvoir\" pour ajouter vos pouvoirs avant de faire cette commande !")
                     resolve('NO_POWER')
                     return;
                 }
                 else if(this.pouvoir2.nom === undefined){
-                    author.send("Vous n'avez qu'un pouvoir ! faite \"/ajouterpouvoir\" pour ajouter vos pouvoirs avant de faire cette commande !")
+                    author.send("Vous n'avez qu'un pouvoir ! faite \"/fiche ajouterpouvoir\" pour ajouter vos pouvoirs avant de faire cette commande !")
                     resolve('NO_POWER')
                     return;
                 }
                 else if(this.capacite_special.nom === undefined){
-                    author.send("Vous n'avez pas de capacité spécial ! faite \"/ajouterspecial\" pour ajouter votre capactié spécial avant de faire cette commande !")
+                    author.send("Vous n'avez pas de capacité spécial ! faite \"/fiche ajouterspecial\" pour ajouter votre capactié spécial avant de faire cette commande !")
                     resolve('NO_SPECIAL')
                     return;
                 }
 
                     let embedFiche = new Discord.MessageEmbed()
                     .setColor(0x9867C5)
-                    .setAuthor(author.username + '     **Image IRL: **',author.displayAvatarURL())
+                    .setAuthor(author.username + '                     Image IRL:',author.displayAvatarURL())
                     .setTitle(`Fiche RP de ${this.firstname} ${this.name}`)
                     .setDescription(`Pseudo in-game: ${this.pseudo}. Niveau in-game: ${this.lvl}.`)
                     .addFields(
@@ -508,7 +507,7 @@ module.exports =  {
         let fiche = new this.FicheC(bot,interaction,option,author);
         
         let readed = await fiche.readDir(author);
-        if(readed === 'FILE_ALREADY_EXISTING'){
+        if(readed === 'FICHE_ALREADY_EXISTING'){
             console.log("on demande la confirmation: ")
             let confirmation = await fiche.askConfimation(author,"Vous avez déjà une fiche. Si vous continuez elle sera supprimée !. Pour continuer écrivez \"oui\".");
             console.log("confirmation: " + confirmation);
@@ -535,7 +534,7 @@ module.exports =  {
         let images = [imageIRL,imageIG]
 
         await fiche.writeJSON(bot,author,option,otherData,images)
-        await author.send("Vous pouvez mainteant ajouter vos pouvoirs avec \"/ajouterpouvoir\" ")
+        await author.send("Vous pouvez mainteant ajouter vos pouvoirs avec \"/fiche ajouterpouvoir\" ")
         
     },
 
@@ -570,11 +569,11 @@ module.exports =  {
     },
 
     afficherFiche: async function (bot, interaction, option){
-        let authorID = interaction.member.user.id;
-        let author = await bot.users.fetch(authorID);
-        let guildID = interaction.guild_id;
-        let channelID = interaction.channel_id;
-        let channel = await bot.channels.fetch(channelID);
+        const authorID = interaction.member.user.id;
+        const author = await bot.users.fetch(authorID);
+        const guildID = interaction.guild_id;
+        const channelID = interaction.channel_id;
+        const channel = await bot.channels.fetch(channelID);
 
         let fiche = new this.FicheC(bot,interaction,option,author);
         await fiche.afficherFiche(bot, author, guildID,channel);

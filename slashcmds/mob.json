@@ -1,40 +1,40 @@
 {
     "data": {
-        "name": "boss",
+        "name": "mob",
         "description": "Une commande de test!",
         "options":[
           {
             "name": "creer",
-            "description": "Une commande qui vous permet de créer un nouveau boss",
+            "description": "Une commande qui vous permet de créer un nouveau mob",
             "type":1,
             "options": [
               {
                   "name": "id",
-                  "description": "L'id du boss (pas d'espace ni de majuscule)",
+                  "description": "L'id du mob (pas d'espace ni de majuscule)",
                   "type": 3,
                   "required": true
               },
               {
                 "name": "nom",
-                "description": "Le nom du boss",
+                "description": "Le nom du mob",
                 "type": 3,
                 "required": true
               },
               {
                 "name": "taille",
-                "description": "La taille du boss en mètre",
+                "description": "La taille du mob en mètre",
                 "type": 4,
                 "required": true
               },
               {
                 "name": "pv",
-                "description": "Les points de vie du boss",
+                "description": "Les points de vie du mob",
                 "type": 4,
                 "required": true
               },
               {
                 "name": "type",
-                "description": "Le type du boss",
+                "description": "Le type du mob",
                 "type": 3,
                 "required": true,
                 "choices": [
@@ -90,32 +90,20 @@
                 },
                 {
                 "name": "description",
-                "description": "La description du boss",
+                "description": "La description du mob",
                 "type": 3,
                 "required": true
-                },
-                {
-                  "name": "salon",
-                  "description": "Le salon du boss",
-                  "type": 7,
-                  "required": true
-                },
-                {
-                    "name": "niveau_requis",
-                    "description": "Le niveau requis pour attaquer le boss",
-                    "type": 4,
-                    "required": true
                 }
                 ]
             },
           {
           "name": "ajouterattaque",
-          "description": "Une commande qui vous permet d'ajouter une attaque à un boss",
+          "description": "Une commande qui vous permet d'ajouter une attaque à un mob",
           "type":1,
           "options": [
               {
                 "name": "id",
-                "description": "L'id du boss à modifier",
+                "description": "L'id du mob à modifier",
                 "type": 3,
                 "required": true
               },
@@ -223,12 +211,12 @@
           },
           {
             "name": "afficher",
-            "description": "Une commande qui permet de lister tout les boss",
+            "description": "Une commande qui permet de lister tout les mob",
             "type":1,
             "options":[
               {
                 "name":"detaille",
-                "description": "Si True, toute les informations seront afficher. Sinon uniquement l'id des boss sera afficher.",
+                "description": "Si True, toute les informations seront afficher. Sinon uniquement l'id des mob sera afficher.",
                 "type": 5,
                 "required": true
               }
