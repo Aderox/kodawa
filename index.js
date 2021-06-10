@@ -3,6 +3,7 @@ const fs = require("fs");
 const fetch = require('node-fetch');
 const botInfo = require('./botInfo.json')
 const bot = new Discord.Client();
+const ytdl = require('ytdl-core');
 
 const DiscordAPI = "https://discord.com/api/v9/";
 
@@ -15,17 +16,22 @@ bot.commands = new Discord.Collection()
 
 //ALL CLASS REQUIRED
 const test = require('./class/test.js');
+const Player = require("./class/player");
 
 testo  = new test.Test("aaa");
 
 const RPguildId = "836871444738211840";
 const devGuildID = "743192359038091326";
 
+function sendLog(msg){
+  let date = new Date();
+  console.log(`[Kodama Logs: ${date.toLocaleDateString('fr-FR')} ${date.toLocaleTimeString('fr-FR')}] ${msg}`);
+}
+
 
 async function postBotSlashCommand(data){
     await bot.api.applications(bot.user.id).guilds(devGuildID).commands.post(data);
     //bot.api.applications(bot.user.id).commands.post(data);
-
 }
 
 async function deleteAllGuildCommands(){
@@ -79,6 +85,8 @@ async function readSlashCommands(){
         });
       });
 }
+
+
 async function sleep(ms){
   return new Promise( (resolve,reject) => {
     setTimeout(() => {
@@ -86,8 +94,26 @@ async function sleep(ms){
     }, ms)
   })
 }
+
+async function stopAllCombat(){
+  return new Promise(async (resolve,reject) => {
+    fs.readdir("./game/players", async (err,files) => {
+      if(err) console.error(err);
+      for(let file in files){
+        let player = new Player.Player(bot,undefined,undefined);
+        await player.setAuthor(files[file].split('.')[0]);
+        player.stopCombat();
+      }
+      console.log("on a stopper tout les combats !");
+      resolve('OK')
+    })
+  });
+}
+
+
 bot.on("ready", async () =>  {
-    console.log("Bot ready !")
+    sendLog("Bot ready !");
+    await stopAllCombat();
     //SUPPRIME TOUTE LES COMMANDES DE LA GUILD (relative au bot of)
     //await deleteAllGuildCommands();
     await readSlashCommands();
@@ -99,7 +125,7 @@ bot.on("ready", async () =>  {
         if(cmd){
         let stuffReturn = await cmd.run(bot, interaction, options);
         bot.api.interactions(interaction.id, interaction.token).callback.post(stuffReturn);
-        await sleep(500);
+        //await sleep(500);
         /*        //bot.api.interactions(interaction.id, interaction.token).callback.patch(sendMessage.main('TROP RELOU !'));
         new Discord.WebhookClient(bot.user.id, interaction.token).send('hello world')
                   await new Discord.WebhookClient(bot.user.id, interaction.token).edit(sendMessage.main('yay !'))
@@ -108,12 +134,28 @@ bot.on("ready", async () =>  {
       }); 
 
       bot.on('message', async msg => {
+        if(msg.content === '.mood'){
+          if (msg.member.voice.channel) {
+            playAudio(msg,'mood');
+          }
+        }
         return;
-        //console.log("message: " + msg.content);
         //TODO VERIFIER SI C'EST UN CHANNEL RP (TYPE) + FAIRE SPAWN MOB EN CONSEQUENCE (PROBA)
       })
 })
 
 
+async function playAudio(msg,audioID){
+  const connection = await msg.member.voice.channel.join();
+  const dispatcher = connection.play(ytdl('https://www.youtube.com/watch?v=Mlq9jrXbEFo',{ filter: 'audioonly' }));
+  dispatcher.on('start', () => {
+    console.log('audio.mp3 is now playing!');
+  });
+  
+  dispatcher.on('finish', () => {
+    console.log('audio.mp3 has finished playing!');
+    connection.disconnect();
+  });
+}
 console.log("hello there");
 bot.login(botInfo.token);

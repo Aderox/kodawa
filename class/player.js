@@ -1,6 +1,7 @@
 const Discord = require("discord.js");
 const fs = require("fs");
 const Fiche = require('./fiche.js');
+const Groupe = require('./groupe.js');
 
 module.exports =  {
     Player: class{
@@ -20,170 +21,301 @@ module.exports =  {
             this.options = options;
             this.path = "./game/players/";
 
+            if(interaction){
             this.id = interaction.member.user.id;
+            //console.log("Nouveau joueur: " + this.id);
+            }else{//console.log("nouveau joueur anonyme !");
+            }
 
-            console.log("Nouveau joueur: " + this.id);
+            this.cooldown_power1 = 0;
+            this.cooldown_power2 = 0;
 
-            this.health = 12
         }
+
+        /**
+         * A utiliser si interaction et options sont définit
+         * @returns 
+         */
         async addInfo(){
             return new Promise(async (resolve,reject) => {
-                console.log("info player added");
+                //console.log("info player added");
                 this.author = await this.bot.users.fetch(this.id);
                 this.guildID = this.interaction.guild_id;
                 this.channelID = this.interaction.channel_id;
                 this.channel = await this.bot.channels.fetch(this.channelID);
+                let infoFiche = await this.readInfoFiche();
+
+                
+                //let write = await this.writePlayer();
+                //this.sendLog("wrtie reponsone: ")
+                //console.log(write);
+
+                await this.readPlayer();
                 resolve()
             })
         }
 
-        async verifyFiche(){
+        /**
+         * A utiliser si interaction et options ne sont pas définit
+         */
+        async setInfo(authorID, guildID, channelID){
             return new Promise(async (resolve,reject) => {
-            this.player = new Fiche.FicheC(this.bot,this.interaction,this.options,this.author);
-            let infoRead = await this.player.readDir(this.author);
-            this.channel.send("Info read: " + infoRead)
-            if(infoRead != 'FICHE_ALREADY_EXISTING'){
-                this.author.send("Vous n'avez pas encore de fiche. Faite \"/fiche creer\" pour créer une fiche.")
-                resolve('FICHE_NOT_EXISTING')
-            }else{
-                resolve('OK')
-            }
+                this.id = authorID;
+                this.author = await this.bot.users.fetch(this.id);
+                this.guildID = guildID;
+                this.channelID = channelID;
+                this.channel = await this.bot.channels.fetch(this.channelID);
+                let infoFiche = await this.readInfoFiche();
+                let write = await this.writePlayer();
+                await this.readPlayer();
+                resolve()
+
             });
         }
 
-        async verifyGameFile(){
-            return new Promise(async (resolve,reject) => {
-                fs.readdir(this.path, async (err,files) => {
-                    if(err) {console.error(err);reject(0)}
-                    if(files.length === 0){
-                        console.log("aucun players")
-                        resolve('OK')
-                    }
-                    else{
-                        for(let i in files){    
-                            if(files[i].includes(this.author.id)){
-                                console.log("existe déjà !!");
-                                resolve('PLAYER_ALREADY_EXISTING');
-                                return;
-                            }
-                        }
-                        
-                    }
-                    console.log("n'existe pas ! on écrit !");
-                    let verifyFiche = await this.verifyFiche();
-                    if(verifyFiche === 'FICHE_NOT_EXISTING'){
-                        return;
-                    }
-                    await this.readInfo();
-                    await this.updateJSON();
-                })
-            })
-        }
-        async readInfo(){
-            return new Promise(async (resolve,reject) => {
-                fs.readFile('./game/fiches/'+this.author.id+'.json',async (err,dataBrut) => {
-                    let data = JSON.parse(dataBrut.toString());
-                    if(data){
-                        
-                        this.group_id = data.group_id;
-                        this.nom=data.nom;
-                        this.prenom=data.prenom;
-                        this.pseudo=data.pseudo;
-                        this.race=data.race;
-                        this.classe=data.classe;
-                        this.faction=data.faction;
-                        this.imagesIRL=data.imageIRL;
-                        this.ig_images=data.ig_images;
-                        this.attaque_basique= data.attaque_basique;
-                        this.capacite_special=data.capacite_special;
-                        this.pouvoirs= data.pouvoirs;
 
-                        await this.updateData();
-                        console.log("DATA FROM PLAYER READ");
-                        console.log(this.DATA);
-                    resolve('OK')
+        async sayHello(msg){
+            console.log("Bonjour je suis: " + this.author.username + " et " + msg)
+        }
+
+        
+         ////////////////////////////////
+         // Partie Lecture de la fiche //
+         ////////////////////////////////
+
+        async readInfoFiche(){
+            return new Promise(async (resolve, reject) => {
+                //Verifie si la fiche existe déjà:
+
+                
+                fs.readdir(this.path, async (err,files) => {
+                    if(err) reject(err);
+
+                    for(let i in files){
+                        if(files[i].split('.')[0] == this.id){
+                            console.log("existe déjà, on pass");
+                            //EXISTE DEJA DONC ON VA READ PLAYER
+                            await this.readPlayer();
+                            resolve('ALREADY');
+                            return;
+                        }
+                    }
+
+                console.log("n'existe pas on va readFile");
+                fs.readFile('./game/fiches/'+this.id+'.json',async (err,dataBrut) => {
+                    if(dataBrut){
+                        let data = JSON.parse(dataBrut.toString());
+                        console.log("on créer this.DATA");
+                        this.DATA = {
+                        "group_id" : data.group_id,
+                        "nom": data.nom,
+                        "prenom":data.prenom,
+                        "pseudo":data.pseudo,
+                        "race":data.race,
+                        "classe":data.classe,
+                        "faction":data.faction,
+                        "imagesIRL":data.imageIRL,
+                        "ig_images" :data.ig_images,
+                        "attaque_basique" : data.attaque_basique,
+                        "capacite_special" :data.capacite_special,
+                        "pouvoirs" : data.pouvoirs,
+                        }
+                        resolve(data);
                     }else{
+                        console.log("pas de data dans le readFiche");
                         reject(err)
                     }
                 })
             })
+            });
         }
 
-        async connect(){
-            this.DATA.connected = true;
-            await this.readInfo();
-            await this.updateJSON();
-        }
-        async disconnect(){
-            this.DATA.connected = false;
-            await this.readInfo();
-            await this.updateJSON();
-        }
 
-        async updateData(){
-            this.DATA = {
-                "group_id":this.group_id,
-                "connected":0,
-                "nom":this.nom,
-                "prenom":this.prenom,
-                "pseudo":this.pseudo,
-                "race":this.race,
-                "classe":this.classe,
-                "faction":this.faction,
-                "imagesIRL":this.imageIRL,
-                "ig_images":this.ig_images,
-                "attaque_basique": this.attaque_basique,
-                "capacite_special":this.capacite_special,
-                "pouvoirs": this.pouvoirs,
-                "inventaire": []
-            } 
-        }
+         ////////////////////////////////////////
+         // Partie Ecriture de la fiche player //
+         ////////////////////////////////////////
 
-        async updateJSON(){
-            await this.updateData();
+        async writePlayer(){
             return new Promise(async (resolve,reject) => {
-            fs.writeFile(this.path+this.author.id+".json", JSON.stringify(this.DATA, null, 4), function(err) {
-                if (err) {
-                  console.error(err);
-                  reject(err)
+                fs.writeFile(this.path+this.id+".json", JSON.stringify(this.DATA, null, 4), function(err) {
+                    if (err) {
+                      console.error(err);
+                      reject(err)
+                    }
+                    else {
+                      resolve("OK")
+                    }
+                  }); 
+            });
+        }
+
+
+         ///////////////////////////////////////
+         // Partie Lecture de la fiche player //
+         ///////////////////////////////////////
+
+         async readPlayer(){
+             return new Promise(async (resolve,reject) => {
+                fs.readFile('./game/players/'+this.id+'.json',async (err,dataBrut) => {
+                    if(dataBrut){
+                        let data = JSON.parse(dataBrut.toString());
+                        this.DATA = {
+                        "pv":data.pv,
+                        "incombat":data.incombat,
+                        "buff":data.buff,
+                        "debuff":data.debuff,
+                        "group_id" : data.group_id,
+                        "nom": data.nom,
+                        "prenom":data.prenom,
+                        "pseudo":data.pseudo,
+                        "race":data.race,
+                        "classe":data.classe,
+                        "faction":data.faction,
+                        "imagesIRL":data.imageIRL,
+                        "ig_images" :data.ig_images,
+                        "attaque_basique" : data.attaque_basique,
+                        "capacite_special" :data.capacite_special,
+                        "pouvoirs" : data.pouvoirs,
+                        }
+                    
+                        if(!this.DATA.pv) this.DATA.pv = 8000;
+                        if(!this.DATA.incombat) {this.DATA.incombat = false; console.log("IN COMBAT UNDEF");}
+
+                    resolve(data);
+                    }else{
+                        reject(err)
+                    }
+                })
+             });
+         }
+
+
+         ////////////////////////////////
+         //Partie utile pour les combat//
+         ////////////////////////////////
+
+         async getInCombat(){
+             await this.readPlayer();
+             return this.DATA.incombat;
+
+         }
+
+         async setInCombat(){
+            await this.readPlayer();
+            this.DATA.incombat = true;
+            await this.writePlayer();
+         }
+
+         async stopCombat(){
+            await this.readPlayer();
+            this.DATA.incombat = false;
+            await this.writePlayer();
+         }
+
+
+        async attack(attaqueCode){
+            return new Promise(async (resolve,reject) => {
+
+                if(attaqueCode == 'BASIC'){
+                    //console.log("HURILA");
+                    resolve(['OK',this.DATA.attaque_basique]);
+                }else if(attaqueCode == 'POUVOIR_1'){
+                    if(this.cooldown_power1 % 12 == 0){
+                        resolve(['OK',this.DATA.pouvoirs[0]])
+                    }else{
+                        resolve(['COOLDOWN',undefined])
+                    }
+
+                }else if(attaqueCode == 'POUVOIR_2'){
+                    if(this.cooldown_power2 % 12 == 0){
+                        resolve(['OK',this.DATA.pouvoirs[1]])
+                    }else{
+                        resolve(['COOLDOWN',undefined])
+                    }
+                    
+                }else if(attaqueCode == 'SPECIAL'){
+                    
+                    
+                }else if(attaqueCode == 'FUIR'){
+                    
                 }
-                else {
-                    console.log("info updated !");
-                  resolve("OK")
-                }
-              });
             });
         }
 
-        async setGroup(group_id){
-                await this.readInfo();
-                this.group_id = group_id;
-                console.log("this.group: " + this.group_id);
-                await this.updateData();
-                console.log("setGroup data:");
-                console.log(this.DATA);
-                await this.updateJSON();
-                return;
-        }
-
-
-
-        async takeDamage(damage){
+        async canAttack(attackCode){
             return new Promise(async (resolve,reject) => {
-                this.health -= damage;
-                resolve()
+                this.DATA.pouvoirs.cooldown_tours
             });
         }
 
-        async getHealth(){
-            return new Promise(async (resolve,reject) => {
-                resolve(this.health)
-            });
+        addTour(){
+            this.cooldown_power1+=1;
+            this.cooldown_power2+=1;
         }
+         
+
+
+        setPV(pv){
+            this.DATA.pv = pv;
+        }
+
+        takeDamage(damage){
+            console.log("aieuh. damage: " + damage);
+            this.DATA.pv -= parseInt(damage);
+        }
+
+        getPV(){
+            return this.DATA.pv;
+        }
+         /////////////////////////////////
+         //Partie utile pour les groupes//
+         /////////////////////////////////
+         
+         async setGroupe(){
+
+         }
+
+         async getGroupe(){
+
+         }
+
+         async verifyGroupAdmin(){
+             
+         }
+
+         ////////
+         //Misc//
+         ////////
+
+         getUser(){
+            return this.author;
+         }
+         
+         setID(id){
+            this.id = id;
+         }
+         
+         getID(){
+            return this.id;
+         }
+
+         async setAuthor(id){
+            this.id = id;
+            this.author = await this.bot.users.fetch(id);
+         }
+
+         sendLog(msg){
+             let date = new Date();
+             console.log(`[Kodama Logs: ${date.toLocaleDateString('fr-FR')} ${date.toLocaleDateString()}] ${msg}`);
+         }
+
+         
+
     },
     main: async function(bot,interaction,options){
+        //TODO VERIFIER SI IL A UNE FICHE
         // ON PEUT METTRE CA DANS UN /LOGIN POUR PERMETTRE AUX JOUEURS DE SE CONNECTER
-        let player = new this.Player(bot,interaction, options);
+        let player = new this.Player(bot, interaction, options);
         await player.addInfo(); // terrible way to do it
         await player.verifyGameFile();
     },

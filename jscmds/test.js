@@ -7,13 +7,12 @@ const modifyInteraction = require('../modules/modifyInteractionMessage.js')
 
 module.exports.run = async(bot, interaction, options) => {
     console.log(interaction);
-    tropRelou(bot, interaction, options, "trop relou les homosapiens");
+    tropRelou(bot, interaction, options, "E.M.T.");
     return sendMessage.main("hello !");
 }
 
 async function tropRelou(bot, interaction, options, message){
     modifyInteraction.main(bot, interaction, options, message);
-    
 }
 
 module.exports.help =  {

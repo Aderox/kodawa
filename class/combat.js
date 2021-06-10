@@ -3,244 +3,367 @@ const fs = require("fs");
 const Player = require("./player.js");
 const Mob = require("./mob.js");
 const Boss = require("./boss.js");
+const modifyInteraction = require('../modules/modifyInteractionMessage.js')
 
 module.exports = {
     Combat: class{
-        /**
-         * La class combat permet de gérer tout les combats entre deux équipes. Elle nécessite une fiche joueur, et instancie un objet de la class joueur (avec un json dans ../game/players/).
-         * Elle nécessite aussi une fiche de boss 
-         * @param {DiscordClient} bot - Le client du bot 
-         * @param {DiscordInteraction} interaction -L'interaction
-         * @param {DiscordOptions} options - Les options de l'interaction
-         * @param {DiscordAuthor} author - Le combatant qui à fait la commande
-         * @param {DiscordChannel} channel  - Le channel du combat
-         */
-
-        constructor(bot, interaction, options, author, channel, fightmsg){
+        constructor(bot, interaction, options, author, channel, fighttype){
             this.bot = bot;
             this.interaction = interaction;
             this.options = options;
             this.author = author;
             this.channel = channel;
-            this.fightmsg = fightmsg;
+            this.fighttype = fighttype;
 
-            this.ally = [this.author.id];
+            this.ally = [];
             this.ennemy = [];
+
+            this.turn = 0;
+
+            this.canReact = true;
         }
 
-        /**
-         * Permet d'instancier la class Player (basé sur la fiche + info de base)
-         * Cette class va être fortement modifiée (effet/dêgat/etc)
-         * TODO: listener sur la vie du joueur (ez dans takeDamage)
-         * @param {DiscordClient} bot -Le client du bot 
-         * @param {DiscordInteraction} interaction -L'interaction
-         * @param {DiscordOptions} options -Les options de l'interaction
-         * @param {String} id -L'id du joueur
-         */
-
-        async createPlayer(id){
-            return new Promise(async (resolve,reject) => {
-                let player = new Player.Player(this.bot, this.interaction, this.options, id);
-                resolve(player);
-            });
-        } 
-
-        /**
-         * Permet d'instancier un objet de la class boss
-         * @param {DiscordClient} bot -Le client du bot 
-         * @param {DiscordInteraction} interaction -L'interaction
-         * @param {DiscordOptions} options -Les options de l'interaction
-         * @param {String} bossID - L'id du boss 
-         */
-        async createBoss(bot, interaction, options, bossID){
-            return new Promise(async (resolve,reject) => {
-                let boss = new Boss.Boss(bot, interaction, options);
-                boss.setId(bossID)
-                resolve(boss);
-            });
-        }
-
-        /**
-         * Instancie un objet de la class mob
-         * @param {DiscordClient} bot -Le client du bot 
-         * @param {DiscordInteraction} interaction -L'interaction
-         * @param {DiscordOptions} options -Les options de l'interaction
-         * @param {*} mobId - L'id du mob
-         * @returns 
-         */
-        async createMob(bot, interaction, options, mobId){
-            return new Promise(async (resolve,reject) => {
-                let mob = new Mob.Mob('Mob',bot, interaction, options);
-                mob.setId(mobId)
-                resolve(mob);
-            });
-        }
-
-        /***********************************************************/
-        /**
-         * Sert à récupérer les mobs du channel (en fonction de leur type)
-         */
-        async fetchChannelMob(){
-        }
-
-        /*******************************************************/
-        async editMessage(){
+        async sendMessage(){
             let embedFiche = new Discord.MessageEmbed()
             .setColor(0x9867C5)
-            .setAuthor('Combat de '+this.author.username,this.author.displayAvatarURL())
-            .setTitle(`Tour de ${undefined}`)
-            .setDescription(`Vous vous battez contre ${undefined}\n⚔️ - Attaque basique\n1️⃣ - Pouvoir 1\n2️⃣ - Pouvoir 2\n❗ - Capacité spécial\n🏳️ - Fuir`)
-            await this.fightmsg.edit(embedFiche);
-            await this.writeReaction();
+            .setAuthor('Tour de '+this.author.username,this.author.displayAvatarURL())
+            .setDescription(`⚔️ - Attaque basique\n1️⃣ - Pouvoir 1\n2️⃣ - Pouvoir 2\n❗ - Capacité spécial\n🏳️ - Fuir`);
+            this.fightmsg = await this.channel.send(embedFiche)
         }
-        async writeReaction(){
-            await this.fightmsg.reactions.removeAll();
+
+        async updateMessage(){
+            return new Promise(async (resolve,reject) => {
+                //modifyInteraction.main(this.bot, this.interaction, this.options, "Tour de " + this.getPlayerTurn().getUser().username);
+
+                this.embedFiche = new Discord.MessageEmbed()
+                .setColor(0x9867C5)
+                .setAuthor('Tour de '+ this.getPlayerTurn().getUser().username, this.getPlayerTurn().getUser().displayAvatarURL())
+                .setDescription(`⚔️ - Attaque basique\n1️⃣ - Pouvoir 1\n2️⃣ - Pouvoir 2\n❗ - Capacité spécial\n🏳️ - Fuir`);
+
+                let pv;
+
+                let cible = "";
+                for(let i in this.getOppositeTeam()){
+                    console.log("pv ennemie: " + this.getOppositeTeam()[i].getPV());
+                    pv = this.getOppositeTeam()[i].getPV();
+                    if(pv<0){pv=0}
+                    cible += parseInt(i+1) + ": " + this.getOppositeTeam()[i].getUser().username + `\t PV: ${pv}` + "\n";
+                }
+
+                let frien = "";
+                for(let i in this.getAllyTeam()){
+                    console.log("pv allié: " + this.getAllyTeam()[i].getPV());
+                    pv = this.getAllyTeam()[i].getPV()
+                    if(pv<0){pv=0}
+                    frien += '-' + this.getAllyTeam()[i].getUser().username + `\t PV: ${pv}` + "\n";
+                }
+
+                if(cible != ""){
+                    this.embedFiche.addField('Cibles: ', cible, false);
+                }else{ this.embedFiche.addField('Cibles: ', "Aucunes", false);}
+
+                if(frien !=""){
+                    this.embedFiche.addField('Allié: ', frien, false);
+                }else{ this.embedFiche.addField('Allié: ', "Aucun", false);}
+                
+                this.fightmsg.edit(this.embedFiche)
+                resolve();
+            });
+        }
+
+        async postCombat(){
+            await this.channel.send('Fin du combat !');
+
+
+
+
+            await this.fightmsg.edit(this.embedFiche);
+        }
+
+
+        async setReactions(){
             let reactions = ['⚔️','1️⃣','2️⃣','❗','🏳️'];
             for(let i in reactions){
-                await this.fightmsg.react(reactions[i])
+                if(this.canReact){
+                    await this.fightmsg.react(reactions[i])
+                }
             }
         }
 
-        async addAlly(){
-            //TODO PUSH ALL GROUP MEMBER
-            //this.ally.push()
+        async deleteReactions(){
+            this.fightmsg.reactions.removeAll();
         }
 
         async awaitReaction(){
-            const filter = (reaction, user) => {
-                if(msg.author.bot) return false;
-                if(msg.author.id){return false}
-                return true;
-            };
+            return new Promise(async (resolve,reject) => {
+                this.React();
+                this.setReactions();
 
-            for(let i in this.ally){
-                console.log("on attend la reaction de " + this.ally[i])
+                let attaquant = this.getPlayerTurn();
+
+                console.log("on attend la réaction de: " + attaquant.getUser().username);
+                const filter = (reaction, user) => user.id === attaquant.getID() && (reaction.emoji.name === '⚔️' || reaction.emoji.name === '1️⃣' || reaction.emoji.name === '2️⃣' || reaction.emoji.name === '❗' || reaction.emoji.name === '🏳️');
+    
+                this.fightmsg.awaitReactions(filter,{max:1}).then(async collected => {
+                    console.log("collected ! ");
+                    if(collected.first().emoji.name == '⚔️'){
+                        console.log("attaque normal");
+                        resolve('BASIC');
+                    }
+                    else if(collected.first().emoji.name == '1️⃣'){
+                        console.log("attaque 1");
+                        resolve('POUVOIR_1');
+                    }
+                    else if(collected.first().emoji.name == '2️⃣'){
+                        console.log("attaque 2");
+                        resolve('POUVOIR_2');
+                    }
+                    else if(collected.first().emoji.name == '❗'){
+                        console.log("spécial");
+                        resolve('SPECIAL');
+                    }
+                    else if(collected.first().emoji.name == '🏳️'){
+                        console.log("BACKUP BACKUP");
+                        resolve('FUITE');
+                        //TODO
+                    }
+                });
+
+            })
+        }
+
+        async awaitCible(){
+            return new Promise(async (resolve,reject) => {
+                await this.updateMessage();
+                let playerTurn = this.getPlayerTurn();
+                let ennemyTeam = this.getOppositeTeam();
+                //console.log("on attend la cible de la part de: " + playerTurn.getUser().username);
+                
+                let msgCible = await this.channel.send(`<@${playerTurn.getID()}> doit choisir une cible:`)
+
+                //console.log("id collector: " + this.getPlayerTurn().getID());
+                //console.log("taille: " + ennemyTeamLength);
+
+                const filter = (message, user) => message.author.id === this.getPlayerTurn().getID();
+
+                let msgCollector = await this.channel.createMessageCollector(filter, {});
+
+                msgCollector.on('collect', async msg => {
+                    let content = parseInt(msg.content)
+                    //console.log("content : " + content + " nan: " + isNaN(content));
+
+                    if(isNaN(content)){
+                        let msgNope = await this.channel.send("Ce n'est pas un nombre !");
+                        msgNope.delete({ timeout: 3000 });
+                    }
+                    else if(parseInt(content) > ennemyTeam.length || parseInt(content) <= 0){
+                        let msgNope = await this.channel.send("Valeur incorrecte!");
+                        msgNope.delete({ timeout: 3000 });
+                    }else{
+                        msgCible.delete();
+                        msg.delete();
+                        msgCollector.stop();
+
+                        //this.channel.send("Cible choisie: " + ennemyTeam[parseInt(content)-1].getUser().username)
+
+                        resolve(ennemyTeam[parseInt(content-1)])
+                    }
+                });
+            })
+        }
+
+
+        nextTurn(){
+            this.turn += 1;
+        }
+        getTurn(){
+            return this.turn;
+        }
+
+        getPlayerTurn(){
+            let turn = this.getTurn();
+            let nbOfPlayer = this.ally.length + this.ennemy.length;
+            if(turn % 2 == 0){
+                return this.ally[turn %  this.ally.length];
+            }else{
+                console.log(this.ennemy);
+                console.log("indice: " + turn % this.ennemy.length);
+                return this.ennemy[turn % this.ennemy.length];
             }
         }
-        /*******************************************************/
 
-        /**
-         * 
-         * @param {Player || Boss || Mob} object 
-         * @returns 
-         */
-        async getHealth(object){
-            return new Promise(async (resolve,reject) => {
-                try{
-                    let health = await object.getHealth();
-                    resolve(health)
-                }catch(e){
-                    console.error(e)
-                    reject(e)
+        getOppositeTeam(){
+            let allyOrEnnemy;
+            if(this.getTurn() % 2 == 0){
+                //C'est un allié, donc on à comme cible les ennemies
+                allyOrEnnemy = this.ennemy
+            }else{
+                allyOrEnnemy = this.ally
+            }
+
+            return allyOrEnnemy
+        }
+
+        getAllyTeam(){
+            let allyOrEnnemy;
+            if(this.getTurn() % 2 == 0){
+                //C'est un allié, donc on à comme allie les allié
+                allyOrEnnemy = this.ally
+            }else{
+                allyOrEnnemy = this.ennemy
+            }
+
+            return allyOrEnnemy
+        }
+
+        stopReact(){
+            this.canReact = false;
+        }
+
+        React(){
+            this.canReact = true;
+        }
+
+        async stopCombat(){
+            for(let i in this.ally){
+                await this.ally[i].stopCombat();
+            }
+            for(let i in this.ennemy){
+                await this.ennemy[i].stopCombat();
+            }
+        }
+
+
+        async addAlly(allyID, guildID, channelID){
+            let newAlly = new Player.Player(this.bot,undefined,undefined);
+            await newAlly.setInfo(allyID, guildID, channelID);
+
+            console.log("\n--IN COMBAT: -- " + await newAlly.getInCombat());
+
+            if(await newAlly.getInCombat()){
+                console.log("OMG DEJA DANS COMBAT");
+                await modifyInteraction.main(this.bot, this.interaction, this.options, "Vous êtes déjà dans un combat !");
+                return 'IN_COMBAT';
+            }
+
+            await newAlly.setInCombat();
+            newAlly.sayHello("Je suis un nouvel allié créer dynamiquement !");
+            this.ally.push(newAlly);
+        }
+
+
+        async addEnnemy(ennemyID, guildID, channelID){
+            let newEnnemy = new Player.Player(this.bot,undefined,undefined);
+            await newEnnemy.setInfo(ennemyID, guildID, channelID);
+            
+            /*if(await newEnnemy.getInCombat()){
+                newAlly.getUser().send(newEnnemy.getUser().author.username + ' est déjà dans un combat !')
+                return 'NOPE';
+            }*/
+
+            await newEnnemy.setInCombat();
+            newEnnemy.sayHello("Je suis un nouvel ennemi créer dynamiquement ! Et je suis méchant");
+            this.ennemy.push(newEnnemy);
+        }
+
+        verifyAlly(){
+            let allAllyDead = true;
+            for(let i in this.getAllyTeam()){
+                if(this.getAllyTeam()[i].getPV() > 0){
+                    allAllyDead = false;
                 }
-            });
+            }
+
+            return allAllyDead;
         }
 
-
-        /**
-         * Fait prendre au joueurs des dégats
-         * @param {String} id - L'id du joueur 
-         * @param {Number} damage - Les dégats qu'il prend
-         * @returns {Promise}
-         */
-
-        async takeDamage(object,damage){
-            return new Promise(async (resolve,reject) => {
-                try{
-                    object.takeDamage(damage);
-                    resolve('ok')
-                }catch(e){
-                    console.error(e)
-                    reject(e)
+        verifyEnnemy(){
+            let allEnnemyDead = true;
+            console.log("verify ennemie");
+            for(let i in this.getAllyTeam()){
+                if(this.getAllyTeam()[i].getPV() > 0){
+                    allEnnemyDead = false;
                 }
-            });
-        }
+            }
 
-        async attaque(object){
-            return new Promise(async (resolve,reject) => {
-                await object.attack()
-            });
-        }
-
-        async readInfo(id){
-            return new Promise(async (resolve,reject) => {
-            });
-        }
-
-        async writeInfo(id){
-            return new Promise(async (resolve,reject) => {
-            });
+            return allEnnemyDead;
         }
     },
 
-    main: async function(bot, interaction, options){
-        const authorID = interaction.member.user.id;
-        const author = await bot.users.fetch(authorID);
-        const guildID = interaction.guild_id;
-        const guild = await bot.guilds.fetch(guildID);
-        const channelID = interaction.channel_id;
-        const channel = await bot.channels.fetch(channelID);
-
-        console.log("men");
-        console.log(options);
-
-
-
-
-
-        let embedFiche = new Discord.MessageEmbed()
-        .setColor(0x9867C5)
-        .setAuthor('Combat de '+author.username,author.displayAvatarURL())
-        .setDescription(`⚔️ - Attaque basique\n1️⃣ - Pouvoir 1\n2️⃣ - Pouvoir 2\n❗ - Capacité spécial\n🏳️ - Fuir`)
-        let fightmsg = await channel.send(embedFiche)
-        
-        let combat = new this.Combat(bot,interaction,options,author,channel,fightmsg)
-
-        await combat.editMessage();
-        let player = await combat.createPlayer(bot, interaction, options, authorID)
-        let mob = await combat.createMob(bot, interaction, options, '123')
-
-        await combat.getHealth(player)
-        await combat.getHealth(mob)
-    },
-
-    PlayerVSPlayer: async function(bot, interaction, options){
-        console.log("DUEL !");
+    main: async function(bot, interaction, options, fighttype){
+        console.log("\nnouveau combat");
 
         const authorID = interaction.member.user.id;
         const author = await bot.users.fetch(authorID);
         const guildID = interaction.guild_id;
-        const guild = await bot.guilds.fetch(guildID);
         const channelID = interaction.channel_id;
         const channel = await bot.channels.fetch(channelID);
 
         const ennemy = await bot.users.fetch(options[0].value);
+
+        if(ennemy.id == authorID){
+            await modifyInteraction.main(bot, interaction, options, "Vous ne pouvez pas vous combattre vous même !");
+            return;
+        }
+        else if(ennemy.bot){
+            await modifyInteraction.main(bot, interaction, options, "Vous ne pouvez pas combattre un bot !");
+            return;
+        }
+
+        
+
+        const combat = new this.Combat(bot, interaction, options, author, channel, fighttype);
+        
+        let ally1 = await combat.addAlly(authorID, guildID, channelID);
+        if(ally1 == 'IN_COMBAT'){
+            await combat.stopCombat();
+            return;
+        }
+
+        if(fighttype == 'PLAYER'){
+            //console.log("C'est du PVP !");
+
+            let ennemy1 = await combat.addEnnemy(ennemy.id, guildID, channelID);
+            //TODO AJOUTER TOUT LES MEMBRES DES GROUPES
+            if(ennemy1 == 'IN_COMBAT'){
+                await combat.stopCombat();
+                return;
+            }
+
+            await combat.sendMessage();
+            modifyInteraction.main(bot, interaction, options, "Bonne chance");
+
+            while((!combat.verifyAlly()) && (!combat.verifyEnnemy())){
+
+                await combat.updateMessage();
+                let cible = await combat.awaitCible();
+
+
+                let attackCode = await combat.awaitReaction();
+
                 
-        console.log(ennemy)
+                let attackResponse = await combat.getPlayerTurn().attack(attackCode);
+                while(!attackResponse[0]=='OK'){
+                    attackCode = await combat.awaitReaction();
+                    attackResponse = await combat.getPlayerTurn().attack(attackCode);
+                }
 
-        return;
+                cible.takeDamage(attackResponse[1]);
 
+                combat.deleteReactions();
+                await combat.updateMessage();
+                combat.stopReact();
+                await combat.deleteReactions();
 
-    },
-    PlayerVSMob: async function(bot, interaction, options){
-        const authorID = interaction.member.user.id;
-        const author = await bot.users.fetch(authorID);
-        const guildID = interaction.guild_id;
-        const guild = await bot.guilds.fetch(guildID);
-        const channelID = interaction.channel_id;
-        const channel = await bot.channels.fetch(channelID);
-
-    },
-    PlayerVSBoss: async function(bot, interaction, options){
-        const authorID = interaction.member.user.id;
-        const author = await bot.users.fetch(authorID);
-        const guildID = interaction.guild_id;
-        const guild = await bot.guilds.fetch(guildID);
-        const channelID = interaction.channel_id;
-        const channel = await bot.channels.fetch(channelID);
+                combat.nextTurn();
+        }
+        console.log("FIN DU COMBAT");
+        await combat.postCombat();
+        await combat.stopCombat();
+        return
+    }   
 
     },
-
     FindBossInArea: async function(bot, interaction, options){
         return new Promise(async (resolve,reject) => {
             //TODO

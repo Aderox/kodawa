@@ -1,6 +1,6 @@
 {
     "data": {
-        "name": "combatre",
+        "name": "combattre",
         "description": "Vous permet d'engager un combat contre un joueur ou un monstre !",
         "options":[
           {
@@ -41,7 +41,7 @@
             "options": [
                 {
                     "name": "joueur",
-                    "description": "Le joueur à combatre !",
+                    "description": "Le joueur à combattre !",
                     "type": 6,
                     "required": true
                 }
